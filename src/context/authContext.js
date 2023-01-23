@@ -1,39 +1,31 @@
-import React, { useState, createContext, useContext } from 'react';
-import { GoogleAuthProvider,signInWithEmailAndPassword, createUserWithEmailAndPassword,signOut } from "firebase/auth";
+import React, { useState, createContext, useContext, useEffect } from 'react';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut,updatePassword } from "firebase/auth";
 import { auth } from '../firebase';
-
-//#region Login with Google and Firebase
-auth.useDeviceLanguage();
-const provider = new GoogleAuthProvider();
-//#endregion
+import { db } from '../firebase';
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 export const AuthContext = createContext();
 export const useAuthContext = () => useContext(AuthContext);
 
 export const AuthProvider = (props) => {
   const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [error, setError] = useState(null);
-  const _signInWithGoogle = () => {
-    signInWithPopup(auth, provider)
-      .then((result) => {
-        console.log(result);
-        setUser(result.user);
-        //setIsLoggedin(true);
-        //setModalVisibility(false);
-      }).catch((e) => {
-        // Handle Errors here.
-        let error = {};
-        error.Code = e.code;
-        error.Message = e.message;
-        setUser(error);
-      });
-  }
   const _signInWithEmailAndPassword = (email, password) => {
     signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // Signed in 
-        console.log(userCredential.user);
-        setUser(userCredential.user);
+      .then(async (userCredential) => {
+
+        // Signed in
+        const docRef = doc(db, "profiles", userCredential.user.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          console.log("Document data:", docSnap.data());
+          setUserProfile(docSnap.data());
+        } else {
+          // doc.data() will be undefined in this case
+          console.log("No such document!");
+        }
         //setIsLoggedin(true);
         //setModalVisibility(false);
         // ...
@@ -46,27 +38,76 @@ export const AuthProvider = (props) => {
         // ..
       });
   }
-  const registerWithEmailAndPassword = (email, password) => {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // Signed in 
-        setUser(userCredential.user);
-        setIsLoggedin(true);
-        setModalVisibility(false);
-        console.log(userCredential.user);
-        // ...
-      })
-      .catch((e) => {
-        let error = {};
-        error.Code = e.code;
-        error.Message = e.message;
-        setError(error);
-      });
+  const registerWithEmailAndPassword = (user) => {
+    return new Promise((resolve, reject) => {
+      createUserWithEmailAndPassword(auth, user.email, user.password)
+        .then(async (userCredential) => {
+          // Signed in 
+          let newUser = {
+            email: user.email,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            day: user.day,
+            month: user.month,
+            year: user.year,
+          };
+          newUser.uid = userCredential.user.uid;
+          await setDoc(doc(db, "profiles", newUser.uid), newUser)
+          setUserProfile(newUser);
+          //setIsLoggedin(true);
+          resolve(newUser);
+        })
+        .catch((e) => {
+          let error = {};
+          error.Code = e.code;
+          error.Message = e.message;
+          setError(error);
+          reject(error);
+          // ..
+        });
+    });
   }
+  const getUserProfile = async (uid) => {
+    const docRef = doc(db, "profiles", uid);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      setUserProfile(docSnap.data());
+    } else {
+      // doc.data() will be undefined in this case
+      console.log("No such userProfile!");
+    }
+  }
+  const updateProfile = async (profile) => {
+    let newUser = {
+      email: profile.email,
+      firstname: profile.firstname,
+      lastname: profile.lastname,
+      day: profile.day,
+      month: profile.month,
+      year: profile.year,
+      uid: profile.uid
+    };
+    await setDoc(doc(db, "profiles", profile.uid), newUser)
+    setUserProfile(newUser);
+    if (profile.password.length > 0) {
+      console.log("Actualizando Password");
+      let firebaseUser = auth.currentUser;
+      const newPassword = profile.password;
+      updatePassword(firebaseUser, newPassword).then((user) => {
+        console.log("Usuario Firebase Actualizado" + user);
+        setUser(user)
+        // Update successful.
+      }).catch((error) => {
+        // An error ocurred
+        // ...
+      });
+    }
+  }
+
   const logout = () => {
     signOut(auth).then(() => {
-      setUser({});
-      setIsLoggedin(false);
+      setUser(null);
+      setUserProfile(null);
     }).catch((error) => {
       // An error happened.
     });
@@ -76,10 +117,15 @@ export const AuthProvider = (props) => {
       value={{
         user,
         error,
+        setError,
         setUser,
-        _signInWithGoogle,
+        userProfile,
+        setUserProfile,
+        getUserProfile,
+        updateProfile,
         _signInWithEmailAndPassword,
-        registerWithEmailAndPassword
+        registerWithEmailAndPassword,
+        logout
       }}
     >
       {props.children}

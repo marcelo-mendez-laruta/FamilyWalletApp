@@ -1,21 +1,33 @@
-import { faAdd } from '@fortawesome/free-solid-svg-icons'
-import React from 'react'
-import { StyleSheet, View, Text, Dimensions } from 'react-native'
+import React, { useEffect } from 'react'
+import { StyleSheet, View, Dimensions, Text, ScrollView } from 'react-native'
 import { Colors } from '../../constants/colors'
-import { IconTextButton } from '../../components/form'
 import { WalletCard } from '../../components/Wallet'
+import IconTextButton from '../../components/form/iconTextButton'
+import { useWalletContext } from '../../context/walletContext';
+import { Ionicons } from '@expo/vector-icons';
+import Loading from '../../components/loading'
 
 const { width, height } = Dimensions.get('screen');
 
-const WalletScreen = () => {
+const WalletScreen = ({ navigation }) => {
+
+  const { wallets, isLoading } = useWalletContext();
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tus Billeteras</Text>
-      <IconTextButton title={"Agregar Billetera"} icon={faAdd} buttonSize={{ height: 15, width: 1.2 }} backgroundColor={"transparent"} color={"black"} />
-      <WalletCard flex={1} name={"Hola"} amount={3000.56} />
-      <WalletCard flex={1} name={"Hola"} amount={3000.56} />
-      <WalletCard flex={1} name={"Hola"} amount={3000.56} />
-      <WalletCard flex={1} name={"Hola"} amount={3000.56} />
+    isLoading ? <Loading /> : <View style={styles.container}>
+      <IconTextButton
+        title="Agregar Billetera"
+        icon={"add"}
+        backgroundColor={"transparent"}
+        color={Colors.black}
+        buttonSize={{ width: 1.1, height: 15 }}
+        onPress={() => navigation.navigate('Wallets', { screen: 'NewWallet' })}
+      />
+      <View style={styles.cardContainer}>
+        <Text style={styles.cardTitle}>Recuerda que para seleccionar una cartera necesitas dar click en <Ionicons name={"star-outline"} size={16}></Ionicons></Text>
+      </View>
+      <ScrollView style={styles.walletsScrollableContainer}>
+        {wallets.length > 0 ? wallets.map((r, i) => (<WalletCard key={i} flex={1} name={r.name} amount={r.totalAmount} lastTransaction={r.lastTransaction} currency={r.currency} isDefault={r.isDefault} walletId={r.id} />)) : <Text style={styles.NoWallets}>Aun no tiene ninguna Cartera.</Text>}
+      </ScrollView>
     </View>
   )
 }
@@ -23,8 +35,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'Top',
-    marginTop: 100,
+    marginTop: 50,
+  },
+  addWalletButton: {
+    fontSize: 40,
+    width: width / 1.2,
   },
   title: {
     paddingHorizontal: 0,
@@ -33,5 +48,26 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.primary,
   },
+  NoWallets: {
+    fontSize: 20,
+    color: Colors.primary,
+    marginTop: 20,
+    flex: 1,
+  },
+  walletsScrollableContainer: {
+    flex: 1,
+    alignContent: 'center',
+  },
+  cardContainer: {
+    width: width / 1.2,
+    backgroundColor: Colors.primary,
+    borderRadius: 10,
+    padding: 10,
+    fontStyle: 'italic',
+  },
+  cardTitle: {
+    fontSize: 15,
+    color: Colors.white,
+  }
 });
 export default WalletScreen

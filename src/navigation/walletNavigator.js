@@ -1,15 +1,16 @@
 import React from 'react';
-import { HomeScreen, SettingsScreen, WalletScreen, StatisticsScreen } from '../screens/wallet';
+import { HomeScreen, ProfileScreen, WalletScreen, StatisticsScreen, NewWalletScreen,NewTransactionScreen } from '../screens/wallet';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
-import { faHome, faWallet, faGear, faChartColumn } from '@fortawesome/free-solid-svg-icons';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 const WalletNavigator = () => {
     return (
         <Tab.Navigator
-            initialRouteName='Wallets'
+            initialRouteName='Inicio'
             screenOptions={{
                 headerShown: false,
                 tabBarLabelStyle: {
@@ -17,6 +18,8 @@ const WalletNavigator = () => {
                 },
                 tabBarActiveTintColor: Colors.black,
                 tabBarInactiveTintColor: Colors.gray,
+                tabBarShowLabel: false,
+                tabBarStyle: { height: 90 },
             }}
         >
             <Tab.Screen
@@ -25,24 +28,38 @@ const WalletNavigator = () => {
                 options={{
                     title: 'Inicio',
                     tabBarIcon: ({ focused }) => (
-                        <FontAwesomeIcon
-                            icon={faHome}
-                            size={22}
-                            color={focused ? Colors.black : Colors.gray}
+                        <Ionicons
+                            name={focused ? "home" : "home-outline"}
+                            size={32}
+                            color={Colors.black}
                         />
                     ),
                 }}
             />
             <Tab.Screen
                 name="Wallets"
-                component={WalletScreen}
+                component={WalletsNavigator}
                 options={{
                     title: 'Carteras',
                     tabBarIcon: ({ focused }) => (
-                        <FontAwesomeIcon
-                            icon={faWallet}
-                            size={22}
-                            color={focused ? Colors.black : Colors.gray}
+                        <Ionicons
+                            name={focused ? "wallet" : "wallet-outline"}
+                            size={32}
+                            color={Colors.black}
+                        />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="Transactions"
+                component={NewTransactionScreen}
+                options={{
+                    title: 'Transacciones',
+                    tabBarIcon: ({ focused }) => (
+                        <Ionicons
+                            name={focused ? "swap-vertical" : "swap-vertical"}
+                            size={32}
+                            color={focused ?Colors.primary:Colors.black}
                         />
                     ),
                 }}
@@ -53,29 +70,44 @@ const WalletNavigator = () => {
                 options={{
                     title: 'Estadisticas',
                     tabBarIcon: ({ focused }) => (
-                        <FontAwesomeIcon
-                            icon={faChartColumn}
-                            size={22}
-                            color={focused ? Colors.black : Colors.gray}
+                        <Ionicons
+                            name={focused ? "bar-chart" : "bar-chart-outline"}
+                            size={32}
+                            color={Colors.black}
                         />
                     ),
                 }}
             />
             <Tab.Screen
-                name="Settings"
-                component={SettingsScreen}
+                name="Profile"
+                component={ProfileScreen}
                 options={{
-                    title: 'Opciones',
+                    title: 'Perfil',
                     tabBarIcon: ({ focused }) => (
-                        <FontAwesomeIcon
-                            icon={faGear}
-                            size={22}
-                            color={focused ? Colors.black : Colors.gray}
+                        <Ionicons
+                            name={focused ? "person-circle" : "person-circle-outline"}
+                            size={32}
+                            color={Colors.black}
                         />
                     ),
                 }}
             />
         </Tab.Navigator>
+    );
+}
+const WalletsNavigator = () => {
+    return (
+        <Stack.Navigator initialRouteName="WalletHome"
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
+            <Stack.Screen
+                name="WalletHome"
+                component={WalletScreen}
+            />
+            <Stack.Screen name="NewWallet" component={NewWalletScreen} />
+        </Stack.Navigator>
     );
 }
 export default WalletNavigator;

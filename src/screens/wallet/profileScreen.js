@@ -1,28 +1,36 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconTextButton, FormInput } from '../../components/form';
 import { Colors } from '../../constants/colors';
 import { Dimensions, StyleSheet, View, Text } from 'react-native';
-import { getDay, getMonth, getYear } from '../../utils/date';
 import { useAuthContext } from '../../context/authContext';
 
 const { width, height } = Dimensions.get('screen');
 
-export default function SignupScreen({ navigation }) {
+export default function ProfileScreen({ navigation }) {
 
-    const { registerWithEmailAndPassword } = useAuthContext();
-    const [firstname, setFirstName] = useState('');
-    const [lastname, setLastname] = useState('');
-    const [email, setEmail] = useState('');
+    const { user, userProfile, updateProfile, logout } = useAuthContext();
+
+    const [firstname, setFirstName] = useState(userProfile.firstname);
+    const [lastname, setLastname] = useState(userProfile.lastname);
+    const [email, setEmail] = useState(userProfile.email);
     const [password, setPassword] = useState('');
     const [passwordConfirmation, setPasswordConfirmation] = useState('');
     const [hidePass, setHidePass] = useState(true);
-    const [day, setDay] = useState(getDay());
-    const [month, setMonth] = useState(getMonth());
-    const [year, setYear] = useState(getYear());
+    const [day, setDay] = useState(userProfile.day);
+    const [month, setMonth] = useState(userProfile.month);
+    const [year, setYear] = useState(userProfile.year);
     const [isRegistrationLoading, setIsRegistrationLoading] = useState(false);
 
-    const handleSignup = () => {
-        if (password === passwordConfirmation && password.length >= 6 && email.length >= 6 && firstname.length >= 6 && lastname.length >= 6 && passwordConfirmation.length >= 6) {
+    useEffect(() => {
+        setFirstName(userProfile.firstname);
+        setLastname(userProfile.lastname);
+        setEmail(userProfile.email);
+        setDay(userProfile.day);
+        setMonth(userProfile.month);
+        setYear(userProfile.year);
+    }, [userProfile]);
+    const handleProfileUpdate = () => {
+        if (email.length >= 6 && firstname.length >= 6 && lastname.length >= 6) {
             setIsRegistrationLoading(true);
             let newUser = {
                 firstname,
@@ -31,9 +39,10 @@ export default function SignupScreen({ navigation }) {
                 password,
                 day,
                 month,
-                year
+                year,
+                uid: user.uid
             };
-            registerWithEmailAndPassword(newUser).then((user) => {
+            updateProfile(newUser).then((user) => {
                 setIsRegistrationLoading(false);
 
             }).finally(() => {
@@ -47,8 +56,7 @@ export default function SignupScreen({ navigation }) {
     };
     return (
         <View style={styles.container}>
-            <Text style={styles.titleText}>Registrate</Text>
-            <Text style={styles.subtitleText}>Y manten tu economia en la mira. 🤑</Text>
+            <Text style={styles.titleText}>Tu Perfil</Text>
             <FormInput
                 placeholder="Nombre"
                 value={firstname}
@@ -92,7 +100,7 @@ export default function SignupScreen({ navigation }) {
                 placeholder="Correo Electronico"
                 value={email}
                 type="emailAddress"
-                onChangeText={(userEmail) => setEmail(userEmail)}
+                editable={false}
             />
             <FormInput
                 placeholder="Contraseña"
@@ -109,20 +117,20 @@ export default function SignupScreen({ navigation }) {
                 onChangeText={(userPassword) => setPasswordConfirmation(userPassword)}
             />
             <IconTextButton
-                title="Registrate"
-                icon={"person-add"}
-                backgroundColor={isRegistrationLoading?Colors.gray:Colors.primary}
+                title="Actualizar perfil"
+                icon={"person"}
+                backgroundColor={isRegistrationLoading ? Colors.gray : Colors.primary}
                 disabled={isRegistrationLoading}
                 color={Colors.white}
-                onPress={handleSignup}
+                onPress={handleProfileUpdate}
             />
             <IconTextButton
-                title="Ya tengo cuenta"
-                icon={"log-in"}
-                backgroundColor='transparent'
+                title="Cerrar sesión"
+                icon={"log-out"}
+                backgroundColor={isRegistrationLoading ? Colors.gray : Colors.error}
                 disabled={isRegistrationLoading}
-                color={Colors.black}
-                onPress={() => navigation.navigate('Login')}
+                color={Colors.white}
+                onPress={logout}
             />
         </View>
     );

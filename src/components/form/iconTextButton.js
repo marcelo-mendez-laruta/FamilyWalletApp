@@ -1,10 +1,10 @@
 import React from 'react';
 import { Dimensions, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('screen');
 
-export default function textButton({ title, onPress, icon, backgroundColor, color,buttonSize }) {
+export default function textButton({ title, onPress, icon, backgroundColor, color,buttonSize,disabled }) {
     const backgroundcolorStyles = {
         backgroundColor: backgroundColor ?? '#5b3a70',
     };
@@ -16,9 +16,9 @@ export default function textButton({ title, onPress, icon, backgroundColor, colo
         height: height / (buttonSize?buttonSize.height:15),
     };
     return (
-        <TouchableOpacity onPress={onPress}>
+        <TouchableOpacity onPress={onPress} disabled={disabled}>
             <View style={[styles.buttonContainer, backgroundcolorStyles,sizeStyles]}>
-                <FontAwesomeIcon style={[styles.icon, colorStyles]} icon={icon} />
+                <Ionicons style={[styles.icon, colorStyles]} name={icon} />
                 <Text style={[styles.text, colorStyles]}>{title}</Text>
             </View>
         </TouchableOpacity>
@@ -27,24 +27,18 @@ export default function textButton({ title, onPress, icon, backgroundColor, colo
 
 const styles = StyleSheet.create({
     text: {
-        fontSize: 18,
+        fontSize: 21,
         fontWeight: 'bold',
-        flex: 2,
     },
     icon: {
-        fontSize: 18,
-        fontWeight: 'bold',
+        fontSize: 21,
         marginRight: 15,
-        flex: 1,
     },
-    buttonContainer: {
-        
-        marginTop: 10,
-        marginBottom: 10,
-        paddingHorizontal: 15,
-        justifyContent: 'center',
+    buttonContainer: {        
+        marginVertical: 7,
         alignItems: 'center',
         borderRadius: 10,
         flexDirection: 'row',
+        paddingStart: 20,
     },
 });
