@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, Image } from 'react-native';
 import { IconTextButton, FormInput } from '../../components/form';
 import { Colors } from '../../constants/colors';
 import { useAuthContext } from '../../context/authContext';
@@ -18,7 +18,8 @@ export default function LoginScreen({ navigation }) {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.titleText}>Welcome!</Text>
+            <Text style={styles.titleText}>Bienvenido</Text>
+            <Image source={require('../../../assets/icon.png')} style={{ width: 200, height: 200 }} />
             <FormInput
                 placeholder="Correo Electronico"
                 value={email}
@@ -36,7 +37,7 @@ export default function LoginScreen({ navigation }) {
 
             <IconTextButton
                 title="Ingresar"
-                icon={"add"}
+                icon={"log-in"}
                 backgroundColor={Colors.primary}
                 color={Colors.white}
                 onPress={() => {
@@ -71,7 +72,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     titleText: {
-        fontSize: 24,
+        fontSize: 36,
         marginBottom: 10,
+        color: Colors.primary, 
+        fontWeight: 'bold',
+
     }
 });
